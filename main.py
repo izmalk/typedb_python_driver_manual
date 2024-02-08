@@ -1,20 +1,29 @@
+# tag::import[]
 from typedb.driver import TypeDB, SessionType, TransactionType, TypeDBOptions
+# end::import[]
 
-DB_NAME = "sample_db2"
-SERVER_ADDR = "127.0.0.1:1729"
+DB_NAME = "sample_db"
 
-print("TypeDB Manual sample code")
-
+# tag::driver[]
 with TypeDB.core_driver("localhost:1729") as driver:
+# end::driver[]
+
+    # tag::list-db[]
     for db in driver.databases.all():
         print(db.name)
+    # end::list-db[]
+    # tag::delete-db[]
     if driver.databases.contains(DB_NAME):
         driver.databases.get(DB_NAME).delete()
+    # end::delete-db[]
+    # tag::create-db[]
     driver.databases.create(DB_NAME)
+    # end::create-db[]
 
     assert driver.databases.contains(DB_NAME), "Database creation error."
     print("Database setup complete.")
 
+    # tag::define[]
     with driver.session(DB_NAME, SessionType.SCHEMA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             define_query = """
@@ -30,13 +39,16 @@ with TypeDB.core_driver("localhost:1729") as driver:
                             """
             transaction.query.define(define_query)
             transaction.commit()
+    # end::define[]
 
+    # tag::undefine[]
     with driver.session(DB_NAME, SessionType.SCHEMA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             undefine_query = "undefine admin sub user;"
             transaction.query.undefine(undefine_query)
             transaction.commit()
-
+    # end::undefine[]
+    # tag::insert[]
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             insert_query = """
@@ -47,7 +59,8 @@ with TypeDB.core_driver("localhost:1729") as driver:
                             """
             transaction.query.insert(insert_query)
             transaction.commit()
-
+    # end::insert[]
+    # tag::match-insert[]
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             match_insert_query = """
@@ -62,7 +75,8 @@ with TypeDB.core_driver("localhost:1729") as driver:
                 transaction.commit()
             else:
                 transaction.close()
-
+    # end::match-insert[]
+    # tag::delete[]
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             delete_query = """
@@ -74,7 +88,8 @@ with TypeDB.core_driver("localhost:1729") as driver:
                             """
             transaction.query.delete(delete_query)
             transaction.commit()
-
+    # end::delete[]
+    # tag::update[]
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             update_query = """
@@ -90,7 +105,8 @@ with TypeDB.core_driver("localhost:1729") as driver:
                 transaction.commit()
             else:
                 transaction.close()
-
+    # end::update[]
+    # tag::fetch[]
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.READ) as transaction:
             fetch_query = """
@@ -102,7 +118,8 @@ with TypeDB.core_driver("localhost:1729") as driver:
             response = transaction.query.fetch(fetch_query)
             for i, JSON in enumerate(response):
                 print(f"User #{i + 1}: {JSON}")
-
+    # end::fetch[]
+    # tag::get[]
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.READ) as transaction:
             get_query = """
@@ -115,9 +132,8 @@ with TypeDB.core_driver("localhost:1729") as driver:
             for i, concept_map in enumerate(response):
                 email = concept_map.get("e").as_attribute().get_value()
                 print(f"Email #{i + 1}: {email}")
-
-# --------------------- Inference ---------------------
-
+    # end::get[]
+    # tag::infer[]
     with driver.session(DB_NAME, SessionType.SCHEMA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
             define_query = """
@@ -143,3 +159,4 @@ with TypeDB.core_driver("localhost:1729") as driver:
             response = transaction.query.fetch(fetch_query)
             for i, JSON in enumerate(response):
                 print(f"User #{i + 1}: {JSON}")
+    # end::infer[]
