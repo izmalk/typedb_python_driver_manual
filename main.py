@@ -5,15 +5,15 @@ SERVER_ADDR = "127.0.0.1:1729"
 
 print("TypeDB Manual sample code")
 
-with (TypeDB.core_driver("localhost:1729") as driver):
+with TypeDB.core_driver("localhost:1729") as driver:
     for db in driver.databases.all():
         print(db.name)
     if driver.databases.contains(DB_NAME):
         driver.databases.get(DB_NAME).delete()
     driver.databases.create(DB_NAME)
 
-    if driver.databases.contains(DB_NAME):
-        print("Database setup complete.")
+    assert driver.databases.contains(DB_NAME), "Database creation error."
+    print("Database setup complete.")
 
     with driver.session(DB_NAME, SessionType.SCHEMA) as session:
         with session.transaction(TransactionType.WRITE) as transaction:
@@ -100,22 +100,21 @@ with (TypeDB.core_driver("localhost:1729") as driver):
                             $u: name, email;
                             """
             response = transaction.query.fetch(fetch_query)
-            i = 0
             for i, JSON in enumerate(response):
                 print(f"User #{i + 1}: {JSON}")
 
     with driver.session(DB_NAME, SessionType.DATA) as session:
         with session.transaction(TransactionType.READ) as transaction:
-            typeql_read_query = """
-                                match
-                                $u isa user, has email $e;
-                                get
-                                $u, $e;
-                                """
-            response = transaction.query.get(typeql_read_query)
+            get_query = """
+                        match
+                        $u isa user, has email $e;
+                        get
+                        $e;
+                        """
+            response = transaction.query.get(get_query)
             for i, concept_map in enumerate(response):
                 email = concept_map.get("e").as_attribute().get_value()
-                print(f"User #{i + 1}: {email}")
+                print(f"Email #{i + 1}: {email}")
 
 # --------------------- Inference ---------------------
 
