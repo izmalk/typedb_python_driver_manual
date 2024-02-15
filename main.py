@@ -228,9 +228,9 @@ with TypeDB.core_driver("localhost:1729") as driver:
                 name = ConceptMap.get("n").as_attribute().get_value()
                 print(f"Name #{i + 1}: {name}")
                 explainable_relations = ConceptMap.explainables().relations()
-                for explainable in explainable_relations:
+                for var, explainable in explainable_relations:
                     print("Explained variable:", explainable)
-                    print("Explainable object:", explainable_relations[explainable])
+                    print("Explainable object:", explainable_relations[explainable])  # ???
                     print("Explainable part of query:", explainable_relations[explainable].conjunction())
                     explain_iterator = transaction.query.explain(explainable_relations[explainable])
                     for explanation in explain_iterator:
