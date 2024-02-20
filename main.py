@@ -33,14 +33,14 @@ with TypeDB.core_driver("localhost:1729") as driver:
                                 plays friendship:friend;
                             admin sub user;
                             """
-            response = tx.query.define(define_query).resolve()
+            tx.query.define(define_query).resolve()
             tx.commit()
     # end::define[]
     # tag::undefine[]
     with driver.session(DB_NAME, SessionType.SCHEMA) as session:
         with session.transaction(TransactionType.WRITE) as tx:
             undefine_query = "undefine admin sub user;"
-            response = tx.query.undefine(undefine_query).resolve()
+            tx.query.undefine(undefine_query).resolve()
             tx.commit()
     # end::undefine[]
     # tag::insert[]
