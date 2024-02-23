@@ -1,5 +1,5 @@
 # tag::import[]
-from typedb.driver import TypeDB, SessionType, TransactionType, TypeDBOptions, ValueType, Transitivity
+from typedb.driver import TypeDB, SessionType, TransactionType, TypeDBOptions, ValueType, Transitivity, TypeDBCredential
 
 # end::import[]
 DB_NAME = "manual_db"
@@ -19,6 +19,31 @@ with TypeDB.core_driver("localhost:1729") as driver:
     # end::create-db[]
     assert driver.databases.contains(DB_NAME), "Database creation error."
     print("Database setup complete.")
+    # tag::connect_core[]
+    driver = TypeDB.core_driver("127.0.0.1:1729")
+    # end::connect_core[]
+    try:
+        # tag::connect_cloud[]
+        driver = TypeDB.cloud_driver("127.0.0.1:1729", TypeDBCredential("admin", "password", tls_enabled=True))
+        # end::connect_cloud[]
+    except:
+        pass
+    # tag::session_open[]
+    session = driver.session(DB_NAME, SessionType.SCHEMA)
+    # end::session_open[]
+    # tag::tx_open[]
+    tx = session.transaction(TransactionType.WRITE)
+    # end::tx_open[]
+    # tag::tx_close[]
+    tx.close()
+    # end::tx_close[]
+    if tx.is_open():
+        # tag::tx_commit[]
+        tx.commit()
+        # end::tx_commit[]
+    # tag::session_close[]
+    session.close()
+    # end::session_close[]
     # tag::define[]
     with driver.session(DB_NAME, SessionType.SCHEMA) as session:
         with session.transaction(TransactionType.WRITE) as tx:
@@ -214,7 +239,7 @@ with TypeDB.core_driver("localhost:1729") as driver:
             get_query = """
                         match
                         $u isa user, has email $e, has name $n;
-                        $e contains 'Alice';
+                        $e contains 'alice';
                         get
                         $u, $n;
                         """
